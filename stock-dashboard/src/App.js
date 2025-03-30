@@ -3,7 +3,7 @@ import {
   Container, Typography, TextField, Button, Card, CardContent, Grid, List, ListItem, Modal, Box, IconButton, AppBar, Toolbar, Switch
 } from "@mui/material";
 import { 
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area
 } from "recharts";
 import CloseIcon from '@mui/icons-material/Close';
 import moment from "moment";
@@ -40,6 +40,10 @@ const StockDashboard = () => {
     const response = await fetch(`http://127.0.0.1:5000/stocks/predict/${symbol}`);
     const data = await response.json();
     setPrediction(data.prediction);
+    
+    if (history.length > 0) {
+      setHistory([...history, { name: "Prediction", price: data.prediction[0] }]);
+    }
   };
 
   const fetchChatResponse = async () => {
@@ -82,20 +86,32 @@ const StockDashboard = () => {
           </Card>
         )}
         {history.length > 0 && (
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={history}>
-              <XAxis dataKey="name" />
-              <YAxis tickFormatter={(value) => `$${value.toFixed(2)}`} />
-              <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
-              <CartesianGrid stroke="#ccc" />
-              <Line type="monotone" dataKey="price" stroke="#8884d8" />
-            </LineChart>
-          </ResponsiveContainer>
+          <>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={history}>
+                <XAxis dataKey="name" />
+                <YAxis tickFormatter={(value) => `$${value.toFixed(2)}`} />
+                <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
+                <CartesianGrid stroke="#ccc" />
+                <Line type="monotone" dataKey="price" stroke="#8884d8" />
+              </LineChart>
+            </ResponsiveContainer>
+            <ResponsiveContainer width="100%" height={300}>
+              <AreaChart data={history}>
+                <XAxis dataKey="name" />
+                <YAxis tickFormatter={(value) => `$${value.toFixed(2)}`} />
+                <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
+                <CartesianGrid stroke="#ccc" />
+                <Area type="monotone" dataKey="price" stroke="#82ca9d" fill="#82ca9d" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </>
         )}
         {prediction && (
-          <Typography variant="h6" sx={{ mt: 2 }}>
-            Predicted Price: ${prediction[0].toFixed(2)}
-          </Typography>
+          <Card sx={{ mt: 2, p: 2 }}>
+            <Typography variant="h6">Predicted Stock Price</Typography>
+            <Typography>Next Day Prediction: ${prediction[0]}</Typography>
+          </Card>
         )}
         <Button variant="contained" sx={{ mt: 4 }} onClick={() => setOpenChat(true)}>Open Chat</Button>
         <Modal open={openChat} onClose={() => setOpenChat(false)}>
